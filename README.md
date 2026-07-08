@@ -22,8 +22,8 @@ Hệ thống nhận diện **cháy nổ** và **té ngã** realtime, chạy trê
 
 | Thành phần | Model | mAP50 / F1 | Inference (Jetson Nano TRT) |
 |---|---|---|---|
-| Fire & Smoke | YOLOv8n | fire: 0.837 · smoke: 0.700 | ~40ms |
-| Pose estimation | YOLOv8n-pose | pretrained | ~55ms |
+| Fire & Smoke | YOLOv8s | fire: 0.837 · smoke: 0.700 | ~40ms |
+| Pose estimation | YOLOv8s-pose | pretrained | ~55ms |
 | Fall detection | LSTM (hidden=64) | F1-Fall: 0.63 · Recall: 0.83 | ~1ms |
 | **Pipeline tổng** | | | **~15fps @ 416px** |
 
@@ -125,33 +125,29 @@ python scripts/inference.py --source 0 --save
 
 ## 🏋️ Training
 
-Train toàn bộ được thực hiện trên **Kaggle T4x2**. Thứ tự chạy:
 
-### Notebook 1 — Fire Detection (~30 phút)
+### Notebook 1 — Fire Detection 
 
-Mở `notebooks/notebook1_fire_detection.ipynb` trên Kaggle.
 
 ```
 Dataset: Fire_and_Smoke/ (YOLO format, 9156 train / 872 val / test images)
-Model:   YOLOv8n pretrained → fine-tune 100 epochs
+Model:   YOLOv8s pretrained → fine-tune 100 epochs
 Input:   416×416
 Result:  mAP50=0.768 (fire=0.837, smoke=0.700)
 ```
 
-### Notebook 2 — Extract Keypoints (~40 phút)
+### Notebook 2 — Extract Keypoints
 
-Mở `notebooks/notebook2_extract_keypoints.ipynb` trên Kaggle.
 
 ```
 Input:  fall/sequences/ (video frames) + fall/csv/ (accelerometer)
-Model:  YOLOv8n-pose pretrained
+Model:  YOLOv8s-pose pretrained
 Output: keypoints/*.npy — mỗi sequence 1 file shape (T, 34)
 Label:  acc > 1.5g → đỉnh ngã → cửa sổ 20 frame trước = Fall
 ```
 
-### Notebook 3 — Train LSTM (~15 phút)
+### Notebook 3 — Train LSTM 
 
-Mở `notebooks/notebook3_train_lstm.ipynb` trên Kaggle.
 
 ```
 Input:  keypoints.zip từ Notebook 2
