@@ -1,0 +1,62 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# config.yaml — Fire & Smoke Alert System
+# ══════════════════════════════════════════════════════════════════════════════
+# Chỉnh file này để thay đổi tham số mà không cần sửa code.
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+# ── Model ─────────────────────────────────────────────────────────────────────
+model:
+  weights: ../Models/fire_best.pt   # đường dẫn tới weights (tương đối từ fire_detection/)
+  imgsz:   640                      # input size: 416 (nhanh) hoặc 640 (chính xác hơn)
+  conf:    0.40                     # confidence threshold — giảm = nhạy hơn, tăng = ít báo nhầm
+
+
+# ── Device ────────────────────────────────────────────────────────────────────
+device: auto          # auto | cuda | cpu
+
+
+# ── N/M Sliding Window Confirmation ──────────────────────────────────────────
+#
+#   Xác nhận sự kiện chỉ khi phát hiện trong N/M frame gần nhất.
+#   Ví dụ: fire_threshold=10, window_size=20 → cần 10/20 frame = 50%
+#
+confirmation:
+  window_size:      20   # M — độ dài cửa sổ trượt (số frame nhìn lại)
+  fire_threshold:   10   # N fire  — 10/20 = 50%  (nhạy hơn, lửa cần phát hiện nhanh)
+  smoke_threshold:  12   # N smoke — 12/20 = 60%  (chặt hơn, khói nhiều false positive)
+
+
+# ── Smoke Motion — Optical Flow ────────────────────────────────────────────────
+#
+#   Khói phải có đặc điểm chuyển động mới được xác nhận:
+#     - Magnitude cao (chuyển động nhiều)
+#     - Entropy hướng cao (turbulent, không phải vật thể cứng)
+#     - Drift lên trên (fy < 0 trong ảnh)
+#
+#   Score = 0.35 × magnitude + 0.45 × direction_entropy + 0.20 × upward_drift
+#
+smoke_motion_threshold: 0.35    # 0.0–1.0  |  tăng = chặt hơn, ít false alarm
+show_optical_flow: false        # true = hiển thị mũi tên flow (debug)
+
+
+# ── Alert System ──────────────────────────────────────────────────────────────
+cooldown_frames: 90    # ~3s @ 30fps — khoảng cách tối thiểu giữa 2 alert
+banner_frames:   90    # ~3s @ 30fps — thời gian banner hiển thị trên màn hình
+
+output_dir: outputs    # thư mục lưu ảnh (outputs/images/) và log (outputs/alerts.log)
+
+
+# ── Ghi chú tuning ────────────────────────────────────────────────────────────
+#
+#   Nếu false alarm quá nhiều (đo bằng --eval):
+#     1. Tăng confirmation.fire_threshold  lên 13-15
+#     2. Tăng confirmation.smoke_threshold lên 15-17
+#     3. Tăng model.conf                   lên 0.50-0.55
+#     4. Tăng smoke_motion_threshold        lên 0.45-0.55
+#
+#   Nếu bỏ sót cháy thật:
+#     1. Giảm confirmation.fire_threshold  xuống 7-8
+#     2. Giảm model.conf                   xuống 0.30-0.35
+#     3. Giảm smoke_motion_threshold        xuống 0.25
+#
