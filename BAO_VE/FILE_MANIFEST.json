@@ -1,0 +1,32 @@
+[
+  {
+    "File": "smoke_fire_detection.pptx",
+    "Bytes": 567619,
+    "SHA256": "C69DEAD12A4D1756EB926D35E2F8899DA19316C3D86D79A67AA73935442B4CCE",
+    "Source": "E:\\DA_TGMT\\slides\\output\\Bao_ve_chay_khoi_YOLOv8n_nen_trang.pptx"
+  },
+  {
+    "File": "smoke_fire_detection.docx",
+    "Bytes": 949201,
+    "SHA256": "E730D92462FB102BEBDEB0B5B602F95245875142854AEC01391BD6375379E9AD",
+    "Source": "E:\\DA_TGMT\\report_revision\\Fire_detection.docx"
+  },
+  {
+    "File": "video_chay_demo.mp4",
+    "Bytes": 17507257,
+    "SHA256": "0E75E581FCE7060B93EBEEC9826380892B1B23A2F078DDC7AC84A4138A035A6F",
+    "Source": "E:\\DA_TGMT\\DATA\\results\\presentation_simple\\video_chay\\annotated.mp4"
+  },
+  {
+    "File": "video_khoi_demo.mp4",
+    "Bytes": 18846714,
+    "SHA256": "91FD346D7BAC5B266BFA9D1614230988F792887E577FF3F99C705BE55D1FA615",
+    "Source": "E:\\DA_TGMT\\DATA\\results\\presentation_simple\\video_khoi\\annotated.mp4"
+  },
+  {
+    "File": "NGUON_VIDEO.md",
+    "Bytes": 2026,
+    "SHA256": "5A06561389A38114BE9643DB603E7CFE27D88C0C75C4A05FC99FB2A0CD729402",
+    "Source": "E:\\DA_TGMT\\DATA\\videos\\NGUON_VIDEO.md"
+  }
+]

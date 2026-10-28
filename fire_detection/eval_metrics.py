@@ -19,15 +19,18 @@ Yêu cầu:
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
 # ══════════════════════════════════════════════════════════════════════════════
 # YOLO VALIDATION — P / R / mAP50 per class
 # ══════════════════════════════════════════════════════════════════════════════
 
-def run_yolo_val(weights: str, data: str, imgsz: int, conf: float, device: str) -> None:
+def run_yolo_val(weights: str, data: str, imgsz: int, conf: float | None, device: str) -> None:
     try:
         from ultralytics import YOLO
     except ImportError:
@@ -66,13 +69,19 @@ def run_yolo_val(weights: str, data: str, imgsz: int, conf: float, device: str) 
                 f"Kết quả có thể lệch. Nên dùng --imgsz {train_imgsz}."
             )
 
+    # The official test call does not override conf. Keep the library's
+    # validation default; the application's video threshold is a separate setting.
+    options = {} if conf is None else {"conf": conf}
     results = model.val(
         data=str(data_path),
         imgsz=imgsz,
-        conf=conf,
         device=device,
         verbose=True,
         split="test",   # dùng tập test, không phải val
+        plots=True,
+        project=str(PROJECT_ROOT / "DATA/results/test_evaluation"),
+        name="test",
+        **options,
     )
 
     # ── In bảng per-class ──────────────────────────────────────────────────
@@ -110,8 +119,8 @@ def run_yolo_val(weights: str, data: str, imgsz: int, conf: float, device: str) 
     print(f"{'═'*60}\n")
 
     # ── Ghi ra file để dùng trong báo cáo ─────────────────────────────────
-    out_file = Path("outputs") / "yolo_metrics.txt"
-    out_file.parent.mkdir(exist_ok=True)
+    out_file = Path(results.save_dir) / "yolo_metrics.txt"
+    out_file.parent.mkdir(parents=True, exist_ok=True)
     with open(out_file, "w", encoding="utf-8") as f:
         f.write(f"weights={weights_path.resolve()}\n")
         f.write(f"data={data_path.resolve()}\n")
@@ -128,6 +137,7 @@ def run_yolo_val(weights: str, data: str, imgsz: int, conf: float, device: str) 
                 )
         f.write("-"*40 + "\n")
         f.write(f"{'mean':<12}  {box.mp:>7.4f}  {box.mr:>7.4f}  {box.map50:>7.4f}\n")
+        f.write(f"mAP50-95 (all)={box.map:.4f}\n")
 
     print(f"  [Saved] {out_file.resolve()}")
 
@@ -137,23 +147,19 @@ def run_yolo_val(weights: str, data: str, imgsz: int, conf: float, device: str) 
 # ══════════════════════════════════════════════════════════════════════════════
 
 def _parse_eval_log(log_path: str) -> dict:
-    """
-    Đọc file log từ --eval (stdout redirect).
-    Tìm dòng có 'False alarm rate' và 'Duration'.
+    """Read clean-video reports, keeping messages distinct from merged events.
 
-    Log format (từ print_eval_report):
-      Duration  : 300.0s  (9000 frames @ 30.0 fps)
-      False alarm rate  : 0.0033 / min
-                        : 0.2000 / hour
+    Legacy reports have message rates, not event rates. Never present those
+    legacy rates as event metrics when the event count is unavailable.
     """
+    result = dict.fromkeys(("duration", "fa_min", "fa_hour", "total_alerts", "events"), "N/A")
     path = Path(log_path)
     if not path.exists():
         print(f"[WARNING] Log không tìm thấy: {path}. Dùng N/A.")
-        return {"duration": "N/A", "fa_min": "N/A", "fa_hour": "N/A", "total_alerts": "N/A"}
+        return result
 
     text = path.read_text(encoding="utf-8", errors="ignore")
-    result = {}
-
+    event_rate = False
     for line in text.splitlines():
         line = line.strip()
         if "Duration" in line and "frames" in line:
@@ -161,29 +167,28 @@ def _parse_eval_log(log_path: str) -> dict:
             try:
                 dur_part = line.split(":")[1].strip()
                 dur_s = float(dur_part.split("s")[0].strip())
-                result["duration"] = f"{dur_s:.0f}s"
+                result["duration"] = f"{dur_s:g}s"
             except Exception:
                 result["duration"] = "?"
-        if "TOTAL false alarms" in line:
+        if re.match(r"(?:Repeated alert messages|Total alerts|TOTAL false alarms)\s*:", line):
             try:
                 result["total_alerts"] = line.split(":")[-1].strip()
             except Exception:
                 result["total_alerts"] = "?"
-        if "/ min" in line and "False alarm rate" in line:
+        if re.match(r"False alarm events\s*:", line):
+            result["events"] = line.split(":", 1)[1].strip()
+        if "/ min" in line and "False event rate" in line:
+            event_rate = True
             try:
                 result["fa_min"] = line.split(":")[-1].replace("/ min", "").strip()
             except Exception:
                 result["fa_min"] = "?"
-        if "/ hour" in line and "False alarm rate" not in line:
+        if "/ hour" in line and event_rate:
             try:
                 result["fa_hour"] = line.split(":")[-1].replace("/ hour", "").strip()
             except Exception:
                 result["fa_hour"] = "?"
 
-    result.setdefault("duration", "N/A")
-    result.setdefault("total_alerts", "N/A")
-    result.setdefault("fa_min", "N/A")
-    result.setdefault("fa_hour", "N/A")
     return result
 
 
@@ -199,9 +204,15 @@ def print_ablation_table(
       Hàng 3 — YOLO + N/M + Flow (bản đầy đủ)
 
     Để có log "YOLO đơn thuần", cần chạy với config tạm:
+      confirmation.window_size=1
       confirmation.fire_threshold=1, confirmation.smoke_threshold=1
       smoke_motion_threshold=0.0  (tức là luôn pass)
     rồi redirect stdout ra file log.
+
+    Cả ba lần chạy phải dùng cùng video, weight, conf, tiền xử lý, cooldown
+    và quy tắc gộp sự kiện. Chỉ dùng --eval với video đã xác nhận là sạch.
+    Bảng trong báo cáo hiện dùng compare_saved_runs.py trên cùng log khung
+    hình; không cần chạy lại YOLO để tái lập bảng đó.
     """
 
     rows = [
@@ -213,7 +224,7 @@ def print_ablation_table(
     print(f"\n{'═'*72}")
     print(f"  ABLATION TABLE — False Alarm Rate on Clean Video (sự kiện/giờ)")
     print(f"{'─'*72}")
-    print(f"  {'System':<22}  {'Duration':>10}  {'Total FA':>9}  {'FA/min':>8}  {'FA/hour':>8}")
+    print(f"  {'System':<22}  {'Duration':>10}  {'Messages':>9}  {'Events':>7}  {'Evt/min':>8}  {'Evt/hour':>8}")
     print(f"{'─'*72}")
 
     for label, log_path in rows:
@@ -222,6 +233,7 @@ def print_ablation_table(
             f"  {label:<22}  "
             f"{d['duration']:>10}  "
             f"{d['total_alerts']:>9}  "
+            f"{d['events']:>7}  "
             f"{d['fa_min']:>8}  "
             f"{d['fa_hour']:>8}"
         )
@@ -231,15 +243,16 @@ def print_ablation_table(
     print("  Lưu ý:")
     print("  • FA/hour ở đây đo trên video sạch (không có cháy) = false alarm rate.")
     print("  • Cần đo thêm recall/độ trễ trên video có cháy thật để hoàn chỉnh.")
-    print("  • Số liệu chỉ có ý nghĩa khi video đủ dài (>=5 phút mỗi dòng).")
+    print("  • Clip ngắn chỉ cho biết quan sát trên clip đó; cần thêm video sạch dài và đa dạng.")
+    print("  • Log cũ thiếu số sự kiện được ghi N/A; không đổi số lần báo thành số sự kiện.")
     print()
 
     # Ghi ra file
-    out_file = Path("outputs") / "ablation_table.txt"
-    out_file.parent.mkdir(exist_ok=True)
+    out_file = PROJECT_ROOT / "DATA/results/evaluation_tools/ablation_table.txt"
+    out_file.parent.mkdir(parents=True, exist_ok=True)
     with open(out_file, "w", encoding="utf-8") as f:
         f.write("ABLATION TABLE\n")
-        f.write(f"{'System':<22}  {'Duration':>10}  {'Total FA':>9}  {'FA/min':>8}  {'FA/hour':>8}\n")
+        f.write(f"{'System':<22}  {'Duration':>10}  {'Messages':>9}  {'Events':>7}  {'Evt/min':>8}  {'Evt/hour':>8}\n")
         f.write("-"*60 + "\n")
         for label, log_path in rows:
             d = _parse_eval_log(log_path)
@@ -247,6 +260,7 @@ def print_ablation_table(
                 f"{label:<22}  "
                 f"{d['duration']:>10}  "
                 f"{d['total_alerts']:>9}  "
+                f"{d['events']:>7}  "
                 f"{d['fa_min']:>8}  "
                 f"{d['fa_hour']:>8}\n"
             )
@@ -267,12 +281,13 @@ def parse_args() -> argparse.Namespace:
                    help="yolo: đo P/R/mAP50 | ablation: in bảng từ log")
 
     # YOLO mode
-    p.add_argument("--weights",  default="../Models/fire_best.pt",
+    p.add_argument("--weights",  default=str(PROJECT_ROOT / "Models/fire_smoke_v2_best.pt"),
                    help="Đường dẫn weights (.pt)")
     p.add_argument("--data",     default=None,
                    help="Đường dẫn data.yaml của dataset (bắt buộc cho mode=yolo)")
     p.add_argument("--imgsz",   type=int, default=640)
-    p.add_argument("--conf",    type=float, default=0.40)
+    p.add_argument("--conf", type=float, default=None,
+                   help="Mặc định không ghi đè ngưỡng đánh giá của Ultralytics, như lời gọi test chính thức; khác ngưỡng video 0.25")
     p.add_argument("--device",  default="auto")
 
     # Ablation mode

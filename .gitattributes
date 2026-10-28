@@ -1,0 +1,3 @@
+# Preserve exact bytes of saved evidence and sources across platforms.
+# SHA-256 manifests must remain valid after clone on Windows or Linux.
+* -text

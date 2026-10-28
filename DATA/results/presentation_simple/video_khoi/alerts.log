@@ -1,0 +1,4 @@
+2026-10-25 09:20:19  INFO      Alert system initialised  save_dir=E:\DA_TGMT\DATA\results\presentation_simple\video_khoi
+2026-10-25 09:20:27  WARNING   ALERT  type=SMOKE  score=1.00  frame=11  dets=[smoke@0.52, smoke@0.31]  file=alert_smoke_20261025_092027_f000011.jpg
+2026-10-25 09:20:47  WARNING   ALERT  type=SMOKE  score=0.60  frame=128  dets=[smoke@0.38]  file=alert_smoke_20261025_092047_f000128.jpg
+2026-10-25 09:21:04  WARNING   ALERT  type=SMOKE  score=0.60  frame=235  dets=[smoke@0.51]  file=alert_smoke_20261025_092104_f000235.jpg

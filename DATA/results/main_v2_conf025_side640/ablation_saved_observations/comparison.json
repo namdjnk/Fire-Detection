@@ -1,0 +1,339 @@
+{
+  "method": "Replay postprocessing on saved observations; full mode verified against original logs",
+  "settings": {
+    "model": {
+      "weights": "E:\\DA_TGMT\\Models\\fire_smoke_v2_best.pt",
+      "imgsz": 640,
+      "conf": 0.25
+    },
+    "confirmation": {
+      "window_size": 20,
+      "fire_threshold": 10,
+      "smoke_threshold": 12
+    },
+    "smoke_motion_threshold": 0.35,
+    "cooldown_frames": 90,
+    "max_side": 640,
+    "event_merge_gap_s": 60.0
+  },
+  "clips": {
+    "video_chay": {
+      "source": "E:\\DA_TGMT\\DATA\\videos\\video_chay.mp4",
+      "frame_count": 643,
+      "duration_s": 21.454766666666668,
+      "clean": false,
+      "observations_sha256": "38ba270a59988ce5a7c22e8e7db0dc20b580e6c67b256c7a847436a6f7f7148d",
+      "modes": {
+        "yolo": {
+          "confirmed_frames": {
+            "fire": 643,
+            "smoke": 356
+          },
+          "alert_events": 1,
+          "alert_messages": 8,
+          "first_alert_s": 0.0,
+          "alerts": [
+            {
+              "type": "fire",
+              "video_time_s": 0.0
+            },
+            {
+              "type": "fire",
+              "video_time_s": 3.003
+            },
+            {
+              "type": "fire",
+              "video_time_s": 6.006
+            },
+            {
+              "type": "fire",
+              "video_time_s": 9.009
+            },
+            {
+              "type": "fire",
+              "video_time_s": 12.012
+            },
+            {
+              "type": "fire",
+              "video_time_s": 15.015
+            },
+            {
+              "type": "fire",
+              "video_time_s": 18.018
+            },
+            {
+              "type": "fire",
+              "video_time_s": 21.021
+            }
+          ]
+        },
+        "nm": {
+          "confirmed_frames": {
+            "fire": 634,
+            "smoke": 296
+          },
+          "alert_events": 1,
+          "alert_messages": 8,
+          "first_alert_s": 0.3003,
+          "alerts": [
+            {
+              "type": "fire",
+              "video_time_s": 0.3003
+            },
+            {
+              "type": "fire",
+              "video_time_s": 3.3033
+            },
+            {
+              "type": "fire",
+              "video_time_s": 6.3063
+            },
+            {
+              "type": "fire",
+              "video_time_s": 9.3093
+            },
+            {
+              "type": "fire",
+              "video_time_s": 12.3123
+            },
+            {
+              "type": "fire",
+              "video_time_s": 15.3153
+            },
+            {
+              "type": "fire",
+              "video_time_s": 18.3183
+            },
+            {
+              "type": "fire",
+              "video_time_s": 21.3213
+            }
+          ]
+        },
+        "flow": {
+          "confirmed_frames": {
+            "fire": 634,
+            "smoke": 296
+          },
+          "alert_events": 1,
+          "alert_messages": 8,
+          "first_alert_s": 0.3003,
+          "alerts": [
+            {
+              "type": "fire",
+              "video_time_s": 0.3003
+            },
+            {
+              "type": "fire",
+              "video_time_s": 3.3033
+            },
+            {
+              "type": "fire",
+              "video_time_s": 6.3063
+            },
+            {
+              "type": "fire",
+              "video_time_s": 9.3093
+            },
+            {
+              "type": "fire",
+              "video_time_s": 12.3123
+            },
+            {
+              "type": "fire",
+              "video_time_s": 15.3153
+            },
+            {
+              "type": "fire",
+              "video_time_s": 18.3183
+            },
+            {
+              "type": "fire",
+              "video_time_s": 21.3213
+            }
+          ]
+        }
+      }
+    },
+    "video_khoi": {
+      "source": "E:\\DA_TGMT\\DATA\\videos\\video_khoi.mp4",
+      "frame_count": 534,
+      "duration_s": 17.8,
+      "clean": false,
+      "observations_sha256": "da4e81473d9cf40b91fb800a4e2dcb5a0e9c17a6a26da9c49d61e4d4c8142bd8",
+      "modes": {
+        "yolo": {
+          "confirmed_frames": {
+            "fire": 0,
+            "smoke": 376
+          },
+          "alert_events": 1,
+          "alert_messages": 6,
+          "first_alert_s": 0.0,
+          "alerts": [
+            {
+              "type": "smoke",
+              "video_time_s": 0.0
+            },
+            {
+              "type": "smoke",
+              "video_time_s": 3.0
+            },
+            {
+              "type": "smoke",
+              "video_time_s": 6.0
+            },
+            {
+              "type": "smoke",
+              "video_time_s": 9.0
+            },
+            {
+              "type": "smoke",
+              "video_time_s": 12.0
+            },
+            {
+              "type": "smoke",
+              "video_time_s": 15.0
+            }
+          ]
+        },
+        "nm": {
+          "confirmed_frames": {
+            "fire": 0,
+            "smoke": 385
+          },
+          "alert_events": 1,
+          "alert_messages": 6,
+          "first_alert_s": 0.36666666666666664,
+          "alerts": [
+            {
+              "type": "smoke",
+              "video_time_s": 0.36666666666666664
+            },
+            {
+              "type": "smoke",
+              "video_time_s": 3.3666666666666667
+            },
+            {
+              "type": "smoke",
+              "video_time_s": 6.366666666666666
+            },
+            {
+              "type": "smoke",
+              "video_time_s": 9.366666666666667
+            },
+            {
+              "type": "smoke",
+              "video_time_s": 13.233333333333333
+            },
+            {
+              "type": "smoke",
+              "video_time_s": 16.233333333333334
+            }
+          ]
+        },
+        "flow": {
+          "confirmed_frames": {
+            "fire": 0,
+            "smoke": 63
+          },
+          "alert_events": 1,
+          "alert_messages": 3,
+          "first_alert_s": 0.36666666666666664,
+          "alerts": [
+            {
+              "type": "smoke",
+              "video_time_s": 0.36666666666666664
+            },
+            {
+              "type": "smoke",
+              "video_time_s": 4.266666666666667
+            },
+            {
+              "type": "smoke",
+              "video_time_s": 7.833333333333333
+            }
+          ]
+        }
+      }
+    },
+    "video_khong_chay": {
+      "source": "E:\\DA_TGMT\\DATA\\videos\\video_khong_chay.mp4",
+      "frame_count": 904,
+      "duration_s": 15.066666666666666,
+      "clean": true,
+      "observations_sha256": "51172426f61a76d9055bd5bd9b95b4982314d7afc9518b4758a0c9b2398a42f1",
+      "modes": {
+        "yolo": {
+          "confirmed_frames": {
+            "fire": 0,
+            "smoke": 0
+          },
+          "alert_events": 0,
+          "alert_messages": 0,
+          "first_alert_s": null,
+          "alerts": []
+        },
+        "nm": {
+          "confirmed_frames": {
+            "fire": 0,
+            "smoke": 0
+          },
+          "alert_events": 0,
+          "alert_messages": 0,
+          "first_alert_s": null,
+          "alerts": []
+        },
+        "flow": {
+          "confirmed_frames": {
+            "fire": 0,
+            "smoke": 0
+          },
+          "alert_events": 0,
+          "alert_messages": 0,
+          "first_alert_s": null,
+          "alerts": []
+        }
+      }
+    },
+    "video_khong_chay2": {
+      "source": "E:\\DA_TGMT\\DATA\\videos\\video_khong_chay2.mp4",
+      "frame_count": 308,
+      "duration_s": 10.266666666666667,
+      "clean": true,
+      "observations_sha256": "c936da22904f1c32c151749e92a464ab0cf51738c58c4062c01c9b2bcb5e5cf2",
+      "modes": {
+        "yolo": {
+          "confirmed_frames": {
+            "fire": 0,
+            "smoke": 0
+          },
+          "alert_events": 0,
+          "alert_messages": 0,
+          "first_alert_s": null,
+          "alerts": []
+        },
+        "nm": {
+          "confirmed_frames": {
+            "fire": 0,
+            "smoke": 0
+          },
+          "alert_events": 0,
+          "alert_messages": 0,
+          "first_alert_s": null,
+          "alerts": []
+        },
+        "flow": {
+          "confirmed_frames": {
+            "fire": 0,
+            "smoke": 0
+          },
+          "alert_events": 0,
+          "alert_messages": 0,
+          "first_alert_s": null,
+          "alerts": []
+        }
+      }
+    }
+  }
+}

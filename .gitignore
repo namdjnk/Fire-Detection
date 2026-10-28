@@ -216,3 +216,25 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local copies, raw downloads and generated working files
+.env.*
+!.env.example
+*.pem
+*.key
+~$*
+/BAN_SAO_MARKDOWN_20261027.zip
+/BAN_SAO_MARKDOWN_20261027/
+/BAO_VE/* - Copy.docx
+/report_revision/fix_review_20261027/backup/
+/report_revision/fix_review_20261027/build/
+/DATA/yolo-config/
+/DATA/videos/*.mp4
+/DATA/results/main_pipeline/
+/DATA/results/test_evaluation/
+/DATA/results/evaluation_tools/
+/DATA/training/**/weights/last.pt
+/DATA/training/**/yolov8n.pt
+
+# Saved experiment logs are evidence for the report
+!/DATA/results/**/*.log

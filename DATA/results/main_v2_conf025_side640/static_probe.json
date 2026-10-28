@@ -1,0 +1,17 @@
+{
+  "test": "Repeated identical streetlamp frame; synthetic static control, not a clean-video false-alarm metric",
+  "scores_after_first_frame": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ]
+}

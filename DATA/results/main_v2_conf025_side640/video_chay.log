@@ -1,0 +1,35 @@
+[Source]  E:\DA_TGMT\DATA\videos\video_chay.mp4
+          frames=643  fps=30.0
+[Pipeline] Loading model : E:\DA_TGMT\Models\fire_smoke_v2_best.pt
+[Pipeline] Device        : cpu
+[Pipeline] Ready.
+
+2026-10-24 19:01:04  INFO      Alert system initialised  save_dir=E:\DA_TGMT\DATA\results\main_v2_conf025_side640\video_chay
+2026-10-24 19:01:09  WARNING   ALERT  type=FIRE   score=1.00  frame=9  dets=[fire@0.81, fire@0.54, fire@0.45]  file=alert_fire_20261024_190109_f000009.jpg
+2026-10-24 19:01:18  WARNING   ALERT  type=FIRE   score=1.00  frame=99  dets=[fire@0.83, fire@0.30, fire@0.29, fire@0.28]  file=alert_fire_20261024_190118_f000099.jpg
+[Progress] 100/643
+2026-10-24 19:01:29  WARNING   ALERT  type=FIRE   score=1.00  frame=189  dets=[fire@0.53, smoke@0.42]  file=alert_fire_20261024_190129_f000189.jpg
+[Progress] 200/643
+2026-10-24 19:01:39  WARNING   ALERT  type=FIRE   score=1.00  frame=279  dets=[fire@0.77, fire@0.66, smoke@0.41]  file=alert_fire_20261024_190139_f000279.jpg
+[Progress] 300/643
+2026-10-24 19:01:50  WARNING   ALERT  type=FIRE   score=1.00  frame=369  dets=[fire@0.83, fire@0.65, smoke@0.28]  file=alert_fire_20261024_190150_f000369.jpg
+[Progress] 400/643
+2026-10-24 19:01:59  WARNING   ALERT  type=FIRE   score=1.00  frame=459  dets=[fire@0.80, fire@0.46]  file=alert_fire_20261024_190159_f000459.jpg
+[Progress] 500/643
+2026-10-24 19:02:08  WARNING   ALERT  type=FIRE   score=1.00  frame=549  dets=[fire@0.55, fire@0.26]  file=alert_fire_20261024_190208_f000549.jpg
+[Progress] 600/643
+2026-10-24 19:02:18  WARNING   ALERT  type=FIRE   score=1.00  frame=639  dets=[fire@0.58, smoke@0.44]  file=alert_fire_20261024_190218_f000639.jpg
+
+════════════════════════════════════════════════════════
+  📊  PIPELINE STATISTICS
+════════════════════════════════════════════════════════
+  Total frames processed    : 643
+  Fire  raw detections      :   643  (100.0%)
+  Smoke raw detections      :   356  (55.4%)
+  Fire  alerts triggered    : 8
+  Smoke alerts triggered    : 0
+  Total alerts              : 8
+  Est. alert rate (30 fps)  : 22.40 alerts/min
+════════════════════════════════════════════════════════
+
+[Results] E:\DA_TGMT\DATA\results\main_v2_conf025_side640\video_chay

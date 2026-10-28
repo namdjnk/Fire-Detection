@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-10-26T10:11:27.9207908+07:00",
+  "elapsed_s": 71.252,
+  "exit_code": 0,
+  "expected_frames": 308,
+  "processed_frames": 308,
+  "valid": true,
+  "command_fps": 4.323,
+  "device": "CPU",
+  "source": "E:\\DA_TGMT\\DATA\\videos\\video_khong_chay2.mp4",
+  "output_dir": "E:\\DA_TGMT\\DATA\\results\\fps_measure_20261026\\run2",
+  "method": "Processed frames / whole command wall-clock time, including Python/model startup, decode, inference, postprocess, MP4 encoding and result writes"
+}

@@ -1,0 +1,9 @@
+{
+  "video": "video_chay",
+  "raw_smoke_frames": 356,
+  "smoke_confirmed_NM_only_frames": 296,
+  "smoke_confirmed_flow_and_NM_frames": 296,
+  "motion_score_median_on_detections": 0.5049184518952463,
+  "motion_score_zero_frames": 0,
+  "note": "Same recorded input detections; frame counts, not alert event counts."
+}

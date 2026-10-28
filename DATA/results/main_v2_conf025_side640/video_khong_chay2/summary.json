@@ -1,0 +1,52 @@
+{
+  "source": "E:\\DA_TGMT\\DATA\\videos\\video_khong_chay2.mp4",
+  "config": {
+    "model": {
+      "weights": "E:\\DA_TGMT\\Models\\fire_smoke_v2_best.pt",
+      "imgsz": 640,
+      "conf": 0.25
+    },
+    "device": "auto",
+    "confirmation": {
+      "window_size": 20,
+      "fire_threshold": 10,
+      "smoke_threshold": 12
+    },
+    "smoke_motion_threshold": 0.35,
+    "show_optical_flow": false,
+    "cooldown_frames": 90,
+    "banner_frames": 90,
+    "output_dir": "E:\\DA_TGMT\\DATA\\results\\main_v2_conf025_side640\\video_khong_chay2"
+  },
+  "names": {
+    "0": "smoke",
+    "1": "fire"
+  },
+  "source_fps": 30.0,
+  "expected_frames": 308,
+  "stats": {
+    "total": 308,
+    "fire_raw": 0,
+    "smoke_raw": 0,
+    "fire_alerts": 0,
+    "smoke_alerts": 0,
+    "smoke_motion_pass": 0,
+    "fire_confirmed_frames": 0,
+    "smoke_confirmed_frames": 0
+  },
+  "processed_duration_s": 10.266666666666667,
+  "all_frames_processed": true,
+  "source_size": [
+    2160,
+    3840
+  ],
+  "processed_size": [
+    360,
+    640
+  ],
+  "max_side": 640,
+  "clean_video_eval": true,
+  "event_merge_gap_s": 60.0,
+  "alert_events": 0,
+  "alerts": []
+}

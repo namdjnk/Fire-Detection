@@ -1,0 +1,61 @@
+{
+  "created_date": "2026-10-28",
+  "sources": [
+    {
+      "path": "fire_detection/compare_saved_runs.py",
+      "sha256": "0983163400fe98306f3da496e66fa445583bae11a84396f5ed41775970943edf",
+      "bytes": 9057
+    },
+    {
+      "path": "fire_detection/config.yaml",
+      "sha256": "b145a03535a4e5c1db58ae7cad4644c6231c59c51cd6cd3cb226d18770b84454",
+      "bytes": 4010
+    },
+    {
+      "path": "fire_detection/eval_metrics.py",
+      "sha256": "3bfdeda44fe7205ef8bb238bb13e60868c97c5db52133003152aaeadee93f0a2",
+      "bytes": 13790
+    },
+    {
+      "path": "fire_detection/main.py",
+      "sha256": "10d5a3d0de9c43a046d382f3fed69d11a8909f47eac0bbe4f9d3dde99e921517",
+      "bytes": 15774
+    },
+    {
+      "path": "fire_detection/pipeline.py",
+      "sha256": "fb875714aaf225d6ea49add304741dcc0c81a6316b456e69453e26c898f15e77",
+      "bytes": 22148
+    },
+    {
+      "path": "fire_detection/requirements.txt",
+      "sha256": "e4f07f3d174ae44b240c0ede37a27d6e12c796def04ddba5ed849040f0a50327",
+      "bytes": 166
+    },
+    {
+      "path": "fire_detection/score_probe.py",
+      "sha256": "1ea682db453fceac37f1e994d54b8935f113b2b3f0f74b4a4f5909135b81790c",
+      "bytes": 6537
+    },
+    {
+      "path": "report_revision/fix_review_20261027/output/smoke_fire_detection.docx",
+      "sha256": "cc031d9e0ec88f206c4496e12233f017b12167e0121c7c2c1c8838ca49db6d64",
+      "bytes": 1661716
+    },
+    {
+      "path": "report_revision/fix_review_20261027/output/smoke_fire_detection.pptx",
+      "sha256": "0a2b11c9661213471c4b14c40b91d7cf4eed7996a1ff5cc77aad781c8dfacc4a",
+      "bytes": 1045614
+    }
+  ],
+  "validation": {
+    "code_files": 7,
+    "word_tables": 13,
+    "word_images": 8,
+    "word_formulas": 5,
+    "word_text_runs_checked": 731,
+    "word_missing_text_runs": 0,
+    "slides": 11,
+    "slide_text_runs_checked": 123,
+    "notes_paragraphs": 11
+  }
+}

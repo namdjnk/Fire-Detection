@@ -7,9 +7,9 @@
 
 # ── Model ─────────────────────────────────────────────────────────────────────
 model:
-  weights: ../Models/fire_best.pt   # đường dẫn tới weights (tương đối từ fire_detection/)
+  weights: ../Models/fire_smoke_v2_best.pt   # tương đối từ thư mục chứa config
   imgsz:   640                      # input size: 416 (nhanh) hoặc 640 (chính xác hơn)
-  conf:    0.40                     # confidence threshold — giảm = nhạy hơn, tăng = ít báo nhầm
+  conf:    0.25                     # ngưỡng thử nghiệm với weight mới
 
 
 # ── Device ────────────────────────────────────────────────────────────────────
@@ -42,9 +42,8 @@ show_optical_flow: false        # true = hiển thị mũi tên flow (debug)
 
 # ── Alert System ──────────────────────────────────────────────────────────────
 cooldown_frames: 90    # ~3s @ 30fps — khoảng cách tối thiểu giữa 2 alert
-banner_frames:   90    # ~3s @ 30fps — thời gian banner hiển thị trên màn hình
 
-output_dir: outputs    # thư mục lưu ảnh (outputs/images/) và log (outputs/alerts.log)
+output_dir: ../DATA/results/main_pipeline    # tương đối từ thư mục chứa config
 
 
 # ── Ghi chú tuning ────────────────────────────────────────────────────────────

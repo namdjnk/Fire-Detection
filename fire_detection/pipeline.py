@@ -5,13 +5,12 @@ Components
 ----------
   MotionAnalyzer        : Dense optical flow (Farneback) — smoke motion scoring
   SlidingWindowConfirm  : N/M frame confirmation window
-  AlertSystem           : On-screen banner, image save, structured log
+  AlertSystem           : Local alert image and structured log
   FireSmokePipeline     : Orchestrates all components per frame
 """
 from __future__ import annotations
 
 import logging
-import time
 from collections import deque
 from datetime import datetime
 from pathlib import Path
@@ -206,38 +205,29 @@ class SlidingWindowConfirm:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 3. ALERT SYSTEM  —  Banner · Image Save · Structured Log
+# 3. ALERT SYSTEM  —  Image Save · Structured Log
 # ══════════════════════════════════════════════════════════════════════════════
 
 class AlertSystem:
     """
     Manages the full alert lifecycle:
-      1. On-screen banner  (pulsing, visible for `banner_frames` frames)
-      2. Save alert image  (with drawn timestamp)
-      3. Write log entry   (Python logging → file + console)
+      1. Save alert image  (with drawn timestamp)
+      2. Write log entry   (Python logging → file + console)
 
     Cooldown prevents repeated alerts for the same event.
     """
-
-    # BGR colours for each alert type
-    _COLORS = {"fire": (15, 30, 200), "smoke": (40, 90, 160)}
-    _LABELS = {"fire": "⚠  FIRE DETECTED", "smoke": "⚠  SMOKE DETECTED"}
 
     def __init__(
         self,
         save_dir: str = "outputs",
         cooldown_frames: int = 90,
-        banner_frames: int = 90,
     ):
         self._img_dir = Path(save_dir) / "images"
         self._img_dir.mkdir(parents=True, exist_ok=True)
 
         self._cooldown_total = cooldown_frames
-        self._banner_total = banner_frames
 
         self._cooldown: int = 0
-        self._banner: int = 0
-        self._alert_type: str | None = None
         self._global_frame: int = 0
         self._counts = {"fire": 0, "smoke": 0}
 
@@ -302,79 +292,19 @@ class AlertSystem:
         )
 
         # ── State ─────────────────────────────────────────────────────────
-        self._alert_type = alert_type
-        self._banner = self._banner_total
         self._cooldown = self._cooldown_total
         self._counts[alert_type] += 1
         return True
 
-    def draw(
-        self,
-        frame: np.ndarray,
-        fire_ratio: float,
-        smoke_ratio: float,
-    ) -> np.ndarray:
-        """Draw banner and score bars. Call BEFORE tick()."""
-        h, w = frame.shape[:2]
-
-        # ── Banner ───────────────────────────────────────────────────────
-        if self._alert_type and self._banner > 0:
-            alpha = 0.60 + 0.30 * abs(np.sin(self._global_frame * 0.18))
-            color = self._COLORS[self._alert_type]
-            text  = self._LABELS[self._alert_type]
-
-            overlay = frame.copy()
-            cv2.rectangle(overlay, (0, 0), (w, 72), color, -1)
-            frame = cv2.addWeighted(overlay, alpha, frame, 1.0 - alpha, 0)
-
-            # Alert text — centred
-            (tw, _), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_DUPLEX, 1.35, 3)
-            cv2.putText(
-                frame, text, ((w - tw) // 2, 52),
-                cv2.FONT_HERSHEY_DUPLEX, 1.35, (255, 255, 255), 3,
-            )
-
-            # Timestamp top-right
-            ts_now = datetime.now().strftime("%Y-%m-%d  %H:%M:%S")
-            cv2.putText(
-                frame, ts_now, (w - 265, 22),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.62, (220, 220, 220), 1,
-            )
-
-        # ── Score bars at bottom ─────────────────────────────────────────
-        bh = 24
-        self._bar(frame, w, h - 2 * bh - 4, fire_ratio,  "Fire",  self._COLORS["fire"])
-        self._bar(frame, w, h - bh - 2,     smoke_ratio, "Smoke", self._COLORS["smoke"])
-
-        return frame
-
     def tick(self) -> None:
-        """Advance internal timers by one frame. Call AFTER draw()."""
+        """Advance the cooldown timer by one processed frame."""
         self._global_frame += 1
         if self._cooldown > 0:
             self._cooldown -= 1
-        if self._banner > 0:
-            self._banner -= 1
-            if self._banner == 0:
-                self._alert_type = None
 
     @property
     def counts(self) -> dict:
         return dict(self._counts)
-
-    # ── Helpers ───────────────────────────────────────────────────────────────
-
-    @staticmethod
-    def _bar(frame: np.ndarray, w: int, y0: int, ratio: float, label: str, color: tuple):
-        bw = int(w * min(ratio, 1.0))
-        cv2.rectangle(frame, (0, y0), (w, y0 + 24), (18, 18, 18), -1)
-        if bw > 0:
-            cv2.rectangle(frame, (0, y0), (bw, y0 + 24), color, -1)
-        cv2.putText(
-            frame, f"{label}: {ratio:.2f}",
-            (7, y0 + 16), cv2.FONT_HERSHEY_SIMPLEX, 0.58, (230, 230, 230), 1,
-        )
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 4. FIRE-SMOKE PIPELINE  —  Orchestrator
@@ -390,8 +320,7 @@ class FireSmokePipeline:
       2  Optical flow    → smoke motion score
       3  N/M windows     → sustained confirmation
       4  Render          → annotated frame with bboxes
-      5  Alert           → banner · save · log (if confirmed & not in cooldown)
-      6  HUD             → banner, score bars, FPS
+      5  Alert           → save · log (if confirmed & not in cooldown)
     """
 
     def __init__(self, cfg: dict):
@@ -425,14 +354,13 @@ class FireSmokePipeline:
         self._alert = AlertSystem(
             save_dir=cfg.get("output_dir", "outputs"),
             cooldown_frames=int(cfg.get("cooldown_frames", 90)),
-            banner_frames=int(cfg.get("banner_frames", 90)),
         )
 
         # ── Runtime stats ─────────────────────────────────────────────────
         self.stats = dict(total=0, fire_raw=0, smoke_raw=0,
-                          fire_alerts=0, smoke_alerts=0)
-        self._fps  = 0.0
-        self._t0   = time.perf_counter()
+                          fire_alerts=0, smoke_alerts=0, smoke_motion_pass=0,
+                          fire_confirmed_frames=0, smoke_confirmed_frames=0)
+        self.last_frame = {}
 
         print("[Pipeline] Ready.\n")
 
@@ -440,14 +368,9 @@ class FireSmokePipeline:
 
     def process(self, frame: np.ndarray) -> np.ndarray:
         """
-        Process one frame. Returns annotated frame with HUD.
+        Process one frame. Return boxes with only FIRE/SMOKE labels.
         """
         self.stats["total"] += 1
-
-        # FPS
-        t = time.perf_counter()
-        self._fps = 0.9 * self._fps + 0.1 / max(t - self._t0, 1e-9)
-        self._t0 = t
 
         # ── 1. YOLO ──────────────────────────────────────────────────────
         res = self.yolo(
@@ -465,7 +388,10 @@ class FireSmokePipeline:
                 conf = float(box.conf[0])
                 bbox = tuple(map(int, box.xyxy[0]))
                 d = dict(label=lbl, conf=conf, bbox=bbox)
-                (fire_dets if lbl == "fire" else smoke_dets).append(d)
+                if lbl == "fire":
+                    fire_dets.append(d)
+                elif lbl == "smoke":
+                    smoke_dets.append(d)
 
         if fire_dets:
             self.stats["fire_raw"] += 1
@@ -484,6 +410,15 @@ class FireSmokePipeline:
         smoke_confirmed = self._smoke_win.update(verified_smoke)
         fire_ratio  = self._fire_win.ratio
         smoke_ratio = self._smoke_win.ratio
+        self.stats["smoke_motion_pass"] += int(verified_smoke)
+        self.stats["fire_confirmed_frames"] += int(fire_confirmed)
+        self.stats["smoke_confirmed_frames"] += int(smoke_confirmed)
+        self.last_frame = dict(
+            fire_raw=bool(fire_dets), smoke_raw=bool(smoke_dets),
+            smoke_motion_scores=smoke_motion, smoke_motion_pass=verified_smoke,
+            fire_confirmed=fire_confirmed, smoke_confirmed=smoke_confirmed,
+            fire_ratio=fire_ratio, smoke_ratio=smoke_ratio,
+        )
 
         # ── 4. Render bounding boxes ──────────────────────────────────────
         vis = frame.copy()
@@ -492,20 +427,25 @@ class FireSmokePipeline:
 
         for d in fire_dets:
             x1, y1, x2, y2 = d["bbox"]
-            cv2.rectangle(vis, (x1, y1), (x2, y2), (15, 30, 200), 3)
+            cv2.rectangle(vis, (x1, y1), (x2, y2), (15, 30, 200), 2)
+
+        if fire_dets:
+            x1, y1, _, _ = max(fire_dets, key=lambda d: d["conf"])["bbox"]
             cv2.putText(
-                vis, f"fire {d['conf']:.2f}",
+                vis, "FIRE",
                 (x1, max(y1 - 8, 12)),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.75, (15, 30, 200), 2,
             )
 
-        for i, d in enumerate(smoke_dets):
+        for d in smoke_dets:
             x1, y1, x2, y2 = d["bbox"]
-            ms    = smoke_motion[i] if i < len(smoke_motion) else 0.0
-            color = (40, 160, 40) if ms >= self._smoke_motion_thr else (120, 120, 180)
-            cv2.rectangle(vis, (x1, y1), (x2, y2), color, 3)
+            color = (40, 160, 40)
+            cv2.rectangle(vis, (x1, y1), (x2, y2), color, 2)
+
+        if smoke_dets:
+            x1, y1, _, _ = max(smoke_dets, key=lambda d: d["conf"])["bbox"]
             cv2.putText(
-                vis, f"smoke {d['conf']:.2f}  mv:{ms:.2f}",
+                vis, "SMOKE",
                 (x1, max(y1 - 8, 12)),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.65, color, 2,
             )
@@ -519,20 +459,7 @@ class FireSmokePipeline:
             if self._alert.trigger("smoke", vis, smoke_dets, smoke_ratio):
                 self.stats["smoke_alerts"] += 1
 
-        # ── 6. HUD — banner + score bars ─────────────────────────────────
-        vis = self._alert.draw(vis, fire_ratio, smoke_ratio)
         self._alert.tick()
-
-        # FPS overlay
-        cv2.putText(
-            vis, f"FPS {self._fps:.1f}",
-            (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.85, (200, 200, 200), 2,
-        )
-        cv2.putText(
-            vis, f"Frame {self.stats['total']}",
-            (10, 56), cv2.FONT_HERSHEY_SIMPLEX, 0.58, (140, 140, 140), 1,
-        )
-
         return vis
 
     # ── Stats ─────────────────────────────────────────────────────────────────
@@ -552,8 +479,7 @@ class FireSmokePipeline:
         print(f"  Fire  alerts triggered    : {fire_a}")
         print(f"  Smoke alerts triggered    : {smk_a}")
         print(f"  Total alerts              : {total}")
-        if T > 0:
-            est_fps = 30.0
-            per_min = total / max(T / est_fps / 60, 1e-6)
-            print(f"  Est. alert rate (30 fps)  : {per_min:.2f} alerts/min")
+        print(f"  Smoke frames passing flow : {self.stats['smoke_motion_pass']}")
+        print(f"  Fire confirmed frames     : {self.stats['fire_confirmed_frames']}")
+        print(f"  Smoke confirmed frames    : {self.stats['smoke_confirmed_frames']}")
         print("═" * 56 + "\n")

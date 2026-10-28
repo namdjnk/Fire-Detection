@@ -1,0 +1,65 @@
+{
+  "source": "E:\\DA_TGMT\\DATA\\videos\\video_khoi.mp4",
+  "config": {
+    "model": {
+      "weights": "E:\\DA_TGMT\\Models\\fire_smoke_v2_best.pt",
+      "imgsz": 640,
+      "conf": 0.25
+    },
+    "device": "auto",
+    "confirmation": {
+      "window_size": 20,
+      "fire_threshold": 10,
+      "smoke_threshold": 12
+    },
+    "smoke_motion_threshold": 0.35,
+    "show_optical_flow": false,
+    "cooldown_frames": 90,
+    "banner_frames": 90,
+    "output_dir": "E:\\DA_TGMT\\DATA\\results\\main_v2_conf025_side640\\video_khoi"
+  },
+  "names": {
+    "0": "smoke",
+    "1": "fire"
+  },
+  "source_fps": 30.0,
+  "expected_frames": 534,
+  "stats": {
+    "total": 534,
+    "fire_raw": 0,
+    "smoke_raw": 376,
+    "fire_alerts": 0,
+    "smoke_alerts": 3,
+    "smoke_motion_pass": 90,
+    "fire_confirmed_frames": 0,
+    "smoke_confirmed_frames": 63
+  },
+  "processed_duration_s": 17.8,
+  "all_frames_processed": true,
+  "source_size": [
+    3840,
+    2160
+  ],
+  "processed_size": [
+    640,
+    360
+  ],
+  "max_side": 640,
+  "clean_video_eval": false,
+  "event_merge_gap_s": 60.0,
+  "alert_events": 1,
+  "alerts": [
+    {
+      "type": "smoke",
+      "video_time_s": 0.36666666666666664
+    },
+    {
+      "type": "smoke",
+      "video_time_s": 4.266666666666667
+    },
+    {
+      "type": "smoke",
+      "video_time_s": 7.833333333333333
+    }
+  ]
+}

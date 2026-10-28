@@ -3,7 +3,7 @@ torch>=2.0.0
 torchvision>=0.15.0
 numpy>=1.24.0
 
-# YOLO (fire/smoke detection + pose)
+# YOLO (fire/smoke detection)
 ultralytics>=8.4.0
 
 # Computer Vision

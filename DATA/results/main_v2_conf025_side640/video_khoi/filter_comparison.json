@@ -1,0 +1,9 @@
+{
+  "video": "video_khoi",
+  "raw_smoke_frames": 376,
+  "smoke_confirmed_NM_only_frames": 385,
+  "smoke_confirmed_flow_and_NM_frames": 63,
+  "motion_score_median_on_detections": 0.2103503857196302,
+  "motion_score_zero_frames": 162,
+  "note": "Same recorded input detections; frame counts, not alert event counts."
+}

@@ -1,289 +1,50 @@
-# SafeVision AI
+# Đồ án phát hiện lửa và khói bằng YOLOv8n
 
-<p align="center">
+Đây là phiên bản **hiện tại** của đồ án Thị giác máy tính. Chương trình dùng một mô hình YOLOv8n để tìm vùng lửa (`fire`) và khói (`smoke`) trong ảnh/video, rồi xác nhận tín hiệu qua nhiều khung và lưu cảnh báo trên máy.
 
-![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
+**Đọc hoặc tiếp tục sửa từ GitHub/máy khác:** mở [DOC_TRUOC_KHI_SUA.md](DOC_TRUOC_KHI_SUA.md). Bản đọc được ngay trên GitHub nằm trong [docs/markdown](docs/markdown/README.md), gồm code, báo cáo Word, nội dung slide, hình và chỉ dẫn bằng chứng. Có bản sửa Word/PPT ngày 27/10 trong `report_revision/fix_review_20261027/output`, chưa thay thế bộ `BAO_VE`; xem hướng dẫn để chọn đúng phiên bản.
 
-![Python](https://img.shields.io/badge/Python-3.9-blue?style=for-the-badge&logo=python)
-![PyTorch](https://img.shields.io/badge/PyTorch-DeepLearning-red?style=for-the-badge&logo=pytorch)
-![OpenCV](https://img.shields.io/badge/OpenCV-ComputerVision-orange?style=for-the-badge&logo=opencv)
-![YOLO](https://img.shields.io/badge/YOLO-v8s/v11s-yellow?style=for-the-badge)
-![LSTM](https://img.shields.io/badge/LSTM-TemporalLearning-purple?style=for-the-badge)
+## Bắt đầu từ đâu
 
-</p>
-
-# 🔥🚨 Fire & Fall Detection System
-
-Hệ thống nhận diện **cháy nổ** và **té ngã** realtime, chạy trên **Jetson Nano** với pipeline 2 model song song: YOLOv8n cho fire/smoke detection và LSTM temporal model cho fall detection.
-
----
-
-## 📋 Tổng quan
-
-| Thành phần | Model | mAP50 / F1 | Inference (Jetson Nano TRT) |
-|---|---|---|---|
-| Fire & Smoke | YOLOv8s | fire: 0.837 · smoke: 0.700 | ~40ms |
-| Pose estimation | YOLOv8s-pose | pretrained | ~55ms |
-| Fall detection | LSTM (hidden=64) | F1-Fall: 0.63 · Recall: 0.83 | ~1ms |
-| **Pipeline tổng** | | | **~15fps @ 416px** |
-
-### Pipeline
-
-```
-Camera frame
-    │
-    ├─── YOLOv8n-fire ──────────────────────── Fire / Smoke alert
-    │
-    └─── YOLOv8n-pose ──► Keypoints (17 joints)
-                │
-                ├─── Rule-based posture check
-                │
-                └─── LSTM (20-frame window) ──► Fall alert
-```
-
----
-
-## 📁 Cấu trúc thư mục
-
-```
-fire-fall-detection/
-├── README.md
-├── requirements.txt
-├── config.yaml                      # Cấu hình toàn bộ pipeline
-├── .gitignore
-│
-├── notebooks/                       # Train trên Kaggle T4x2
-│   ├── notebook1_fire_detection.ipynb
-│   ├── notebook2_extract_keypoints.ipynb
-│   └── notebook3_train_lstm.ipynb
-│
-├── models/                          # Weights (không commit, dùng Git LFS)
-│   ├── fire_best.pt
-│   ├── fall_lstm_best.pt
-│   └── .gitkeep
-│
-├── src/
-│   ├── models/
-│   │   └── lstm_model.py            # Định nghĩa FallLSTM
-│   ├── pipeline.py                  # Class SafetyPipeline
-│   └── utils/
-│       ├── keypoint_utils.py
-│       └── alert_utils.py
-│
-├── scripts/
-│   ├── inference.py                 # Chạy trên PC (CPU/GPU)
-│   ├── export_onnx.py               # Export .pt → .onnx
-│   └── benchmark.py                 # Đo FPS
-│
-└── jetson/
-    ├── convert_trt.sh               # ONNX → TensorRT engine
-    ├── inference_trt.py             # Inference dùng TRT engine
-    └── install.sh                   # Cài dependencies trên Jetson Nano
-```
-
----
-
-## 🚀 Quickstart
-
-### 1. Clone và cài dependencies
-
-```bash
-git clone https://github.com/your-username/fire-fall-detection.git
-cd fire-fall-detection
-pip install -r requirements.txt
-```
-
-### 2. Download weights
-
-Download từ [Releases](https://github.com/your-username/fire-fall-detection/releases) và đặt vào thư mục `models/`:
-
-```
-models/
-├── fire_best.pt
-└── fall_lstm_best.pt
-```
-
-### 3. Chạy inference
-
-```bash
-# Webcam (tự detect GPU/CPU)
-python scripts/inference.py --source 0
-
-# File video
-python scripts/inference.py --source video.mp4
-
-# Ép dùng CPU
-python scripts/inference.py --source 0 --device cpu
-
-# Lưu output
-python scripts/inference.py --source 0 --save
-```
-
-**Phím tắt:** `Q` thoát · `S` screenshot · `P` pause
-
----
-
-## 🏋️ Training
-
-
-### Notebook 1 — Fire Detection 
-
-
-```
-Dataset: Fire_and_Smoke/ (YOLO format, 9156 train / 872 val / test images)
-Model:   YOLOv8s pretrained → fine-tune 100 epochs
-Input:   416×416
-Result:  mAP50=0.768 (fire=0.837, smoke=0.700)
-```
-
-### Notebook 2 — Extract Keypoints
-
-
-```
-Input:  fall/sequences/ (video frames) + fall/csv/ (accelerometer)
-Model:  YOLOv8s-pose pretrained
-Output: keypoints/*.npy — mỗi sequence 1 file shape (T, 34)
-Label:  acc > 1.5g → đỉnh ngã → cửa sổ 20 frame trước = Fall
-```
-
-### Notebook 3 — Train LSTM 
-
-
-```
-Input:  keypoints.zip từ Notebook 2
-Model:  LSTM (hidden=64, 2 layers) + LayerNorm + Dropout
-Result: F1-Fall=0.63, Recall=0.83 (val set)
-```
-
----
-
-## 📊 Dataset
-
-| Dataset | Nguồn | Dùng cho |
-|---|---|---|
-| `Fire_and_Smoke/` | YOLO format, train/valid/test | Fire detection |
-| `fallv2/` | 5 class: Blank/Stand/Fall/Lie/Likefall | (dự phòng, feature extraction) |
-| `fall/sequences/` | Video frames theo chuỗi | Temporal LSTM |
-| `fall/csv/` | Accelerometer data | Label cửa sổ Fall |
-
-> Dataset không được include trong repo. Xem hướng dẫn tại [Kaggle Dataset](https://www.kaggle.com/datasets/nguynteincong/dataset-fall-fire).
-
----
-
-## 🖥️ Deploy lên Jetson Nano
-
-### Yêu cầu
-
-- Jetson Nano 4GB
-- JetPack 4.6+ (TensorRT 8.x)
-- Python 3.8+, OpenCV 4.x
-
-### Cài dependencies
-
-```bash
-bash jetson/install.sh
-```
-
-### Convert sang TensorRT
-
-```bash
-bash jetson/convert_trt.sh
-```
-
-Script sẽ tự động convert 3 file ONNX:
-
-```bash
-trtexec --onnx=models/fire_best.onnx    --saveEngine=models/fire.engine    --fp16
-trtexec --onnx=models/yolov8n-pose.onnx --saveEngine=models/pose.engine    --fp16
-trtexec --onnx=models/fall_lstm.onnx    --saveEngine=models/lstm.engine    --fp16
-```
-
-### Chạy trên Jetson Nano
-
-```bash
-python jetson/inference_trt.py --source 0
-```
-
----
-
-## ⚙️ Cấu hình
-
-Chỉnh `config.yaml` để thay đổi các tham số mà không cần sửa code:
-
-```yaml
-pipeline:
-  seq_len: 20          # Số frame LSTM window
-  fall_confirm: 5      # Số frame liên tiếp cần để xác nhận Fall
-  cooldown: 30         # Số frame nghỉ sau mỗi lần alert
-
-fire:
-  conf: 0.45           # Confidence threshold
-
-inference:
-  imgsz: 416           # Input size (416 hoặc 640)
-  device: auto         # auto | cuda | cpu
-```
-
----
-
-## 📈 Kết quả thực nghiệm
-
-### Fire Detection (test set)
-
-| Class | Precision | Recall | mAP50 |
-|---|---|---|---|
-| fire | 0.843 | 0.780 | 0.837 |
-| smoke | 0.788 | 0.640 | 0.700 |
-| **all** | **0.815** | **0.710** | **0.768** |
-
-### Fall Detection (val set)
-
-| Class | Precision | Recall | F1 |
-|---|---|---|---|
-| Normal | 0.93 | 0.73 | 0.82 |
-| Fall | 0.51 | 0.83 | 0.63 |
-
-> Fall Recall = 0.83: model bắt được 83% ca ngã thật. False alarm được giảm thêm bằng confirmation counter (5 frame liên tiếp).
-
-### FPS ước tính trên Jetson Nano
-
-| Cấu hình | FPS |
+| Cần xem | Đường dẫn |
 |---|---|
-| 3 model TensorRT FP16, input 416px | ~15fps |
-| 3 model TensorRT FP16, input 640px | ~10fps |
+| Mã chạy video | `E:\DA_TGMT\fire_detection\main.py`, `pipeline.py`, `config.yaml` |
+| Weight đang dùng | `E:\DA_TGMT\Models\fire_smoke_v2_best.pt` |
+| Báo cáo cuối | `E:\DA_TGMT\report_revision\Fire_detection.docx` (bản mang đi bảo vệ: `E:\DA_TGMT\BAO_VE\smoke_fire_detection.docx`) |
+| Slide cuối | `E:\DA_TGMT\slides\output\Bao_ve_chay_khoi_YOLOv8n_nen_trang.pptx` |
+| Hai video trình bày | `E:\DA_TGMT\DATA\results\presentation_simple\video_chay\annotated.mp4` và `...\video_khoi\annotated.mp4` |
+| Hướng dẫn bảo vệ | `E:\DA_TGMT\BAO_VE\HUONG_DAN_TRINH_BAY_11_SLIDE.md` |
+| Bộ file mang đi bảo vệ | `E:\DA_TGMT\BAO_VE` |
 
----
+## Bài đã làm và số liệu chính
 
-## 🛠️ Yêu cầu hệ thống
+- Nguồn ảnh/nhãn: bộ **Smoke-Fire-Detection-YOLO** của `sayedgamal99` trên Kaggle. Nhãn `0 = smoke`, `1 = fire`.
+- Fine-tune YOLOv8n từ `yolov8n.pt` trong 100 epoch trên một GPU Tesla T4 của Kaggle; batch 16, ảnh 640 × 640. Lần thử 1 epoch/2% trước đó chỉ là kiểm tra môi trường.
+- Tập test có 4.291 ảnh hợp lệ và 5.166 đối tượng. Weight hiện tại đạt Precision 74,27%, Recall 67,45%, mAP50 73,70%, mAP50–95 41,63%. mAP50 theo lớp: khói 79,13%; lửa 68,27%.
+- Video: YOLO dự đoán từng khung; khói được kiểm tra thêm bằng optical flow; cửa sổ N/M xác nhận tín hiệu trước khi lưu cảnh báo. Giao diện video chỉ hiện hộp và chữ `FIRE` hoặc `SMOKE`.
+- Đã thử bốn video: một clip lửa, một clip khói, hai clip sạch. Hai clip sạch dài tổng cộng khoảng 25,33 giây không có cảnh báo quan sát được. Phạm vi này chưa đủ kết luận tỉ lệ báo nhầm trong thực tế.
 
+Các số liệu chi tiết, phương pháp đánh giá và giới hạn nằm trong báo cáo cuối và `E:\DA_TGMT\report_revision\context.md`.
+
+## Cấu trúc thư mục
+
+| Thư mục | Vai trò hiện tại |
+|---|---|
+| `fire_detection` | Mã chương trình đang dùng. |
+| `Models\fire_smoke_v2_best.pt` | Weight đang dùng khi chạy và đánh giá. |
+| `DATA\training`, `DATA\results`, `DATA\videos` | Minh chứng train/test, kết quả chạy và video đầu vào. Giữ nguyên để đối chiếu. |
+| `report_revision`, `slides\output` | Báo cáo, quy tắc biên tập và slide cuối. |
+| `BAO_VE` | Bản sao gọn của file cần mở khi trình bày, kèm hướng dẫn. |
+| `E:\DA_TGMT_LUU_TRU_20261026` | Bản nháp, checkpoint theo epoch, kết quả chạy cũ và mã SafeVision AI cũ đã được chuyển khỏi dự án để lưu trữ. Có `MOVE_LOG.csv` ghi từng đường dẫn cũ và mới. Không dùng làm kết quả chính. |
+
+## Chạy thử code
+
+Dùng môi trường Python đã cài tại `E:\DA_TGMT\.venv`. Mở PowerShell trong thư mục dự án rồi chạy ví dụ sau:
+
+```powershell
+& 'E:\DA_TGMT\.venv\Scripts\python.exe' 'E:\DA_TGMT\fire_detection\main.py' --source 'E:\DA_TGMT\DATA\videos\video_chay.mp4' --save_video
 ```
-# PC training / testing
-Python        >= 3.9
-PyTorch       >= 2.0
-ultralytics   >= 8.4
-opencv-python >= 4.8
-numpy         >= 1.24
 
-# Jetson Nano
-JetPack       >= 4.6
-TensorRT      >= 8.0
-CUDA          10.2
-```
+Dấu hiệu chạy đúng: chương trình nạp `fire_smoke_v2_best.pt`, hiện hộp và tên `FIRE`/`SMOKE` trên video, đồng thời tạo kết quả trong thư mục được cấu hình ở `fire_detection\config.yaml`. Nếu chỉ cần mở mẫu khi bảo vệ, dùng hai video đã kết xuất trong `BAO_VE`, không cần chạy lại toàn bộ.
 
----
-
-## 📝 Ghi chú
-
-- **Smoke detection** có mAP50 thấp hơn fire (0.700 vs 0.837) do khói có hình dạng mờ và dễ nhầm với mây/bụi. Cải thiện bằng cách tăng data augmentation hoặc dùng `yolov8s.pt`.
-- **Fall LSTM** được train trên dataset nhỏ (~10 sequences) nên có thể overfit. Kết quả sẽ tốt hơn đáng kể khi có thêm data.
-- **Confirmation logic** (5 frame liên tiếp) là bước quan trọng giảm false alarm từ ~49% xuống ~10-15% mà không cần retrain.
-
----
-
-## 📄 License
-
-MIT License — xem [LICENSE](LICENSE).
-
-# ⭐ If you like this project
-
-Give this repository a star ⭐
+Đã có **một phép đo tốc độ toàn lệnh trên CPU**: 308 khung trong 71,252 giây, tương đương 4,323 khung/giây, gồm khởi động và ghi MP4; bằng chứng ở `DATA/results/fps_measure_20261026/measurement.json`. Chưa đo tốc độ ổn định trên nhiều video, độ chính xác theo sự kiện video hoặc chạy trên Jetson Nano. Bài hiện tại không có chức năng phát hiện té ngã hay gửi Telegram. Mã và weight cũ của nhánh té ngã được giữ ở `E:\DA_TGMT_LUU_TRU_20261026`; chúng vẫn còn trong lịch sử Git, nhưng không còn nằm trong thư mục làm việc hiện tại.

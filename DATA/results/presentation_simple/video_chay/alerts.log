@@ -1,0 +1,9 @@
+2026-10-25 09:18:44  INFO      Alert system initialised  save_dir=E:\DA_TGMT\DATA\results\presentation_simple\video_chay
+2026-10-25 09:18:49  WARNING   ALERT  type=FIRE   score=1.00  frame=9  dets=[fire@0.81, fire@0.54, fire@0.45]  file=alert_fire_20261025_091849_f000009.jpg
+2026-10-25 09:19:01  WARNING   ALERT  type=FIRE   score=1.00  frame=99  dets=[fire@0.83, fire@0.30, fire@0.29, fire@0.28]  file=alert_fire_20261025_091901_f000099.jpg
+2026-10-25 09:19:12  WARNING   ALERT  type=FIRE   score=1.00  frame=189  dets=[fire@0.53, smoke@0.42]  file=alert_fire_20261025_091912_f000189.jpg
+2026-10-25 09:19:22  WARNING   ALERT  type=FIRE   score=1.00  frame=279  dets=[fire@0.77, fire@0.66, smoke@0.41]  file=alert_fire_20261025_091922_f000279.jpg
+2026-10-25 09:19:33  WARNING   ALERT  type=FIRE   score=1.00  frame=369  dets=[fire@0.83, fire@0.65, smoke@0.28]  file=alert_fire_20261025_091933_f000369.jpg
+2026-10-25 09:19:45  WARNING   ALERT  type=FIRE   score=1.00  frame=459  dets=[fire@0.80, fire@0.46]  file=alert_fire_20261025_091945_f000459.jpg
+2026-10-25 09:19:55  WARNING   ALERT  type=FIRE   score=1.00  frame=549  dets=[fire@0.55, fire@0.26]  file=alert_fire_20261025_091955_f000549.jpg
+2026-10-25 09:20:07  WARNING   ALERT  type=FIRE   score=1.00  frame=639  dets=[fire@0.58, smoke@0.44]  file=alert_fire_20261025_092007_f000639.jpg
